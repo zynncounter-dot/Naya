@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NayaBottle - Pemesanan Tumbler Custom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .floating-tumbler {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .falling-tumbler {
+            animation: fall 8s linear infinite;
+            position: fixed;
+            z-index: 1;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .menu-gradient {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .order-gradient {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .contact-gradient {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .tumbler-frame {
+            border: 3px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .tumbler-frame:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-2px);
+        }
+
+        @keyframes slideInScale {
+            0% { transform: scale(0.5) translateY(-50px); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes checkmark {
+            0% { stroke-dashoffset: 100; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        .success-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            
+            justify-content: center;
+        }
+
+        .success-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            animation: slideInScale 0.6s ease-out;
+        }
+
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+        }
+
+        .checkmark-circle {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: checkmark 0.8s ease-out 0.2s forwards;
+        }
+    </style>
+</head>
+<body class="font-sans">
+
+    <!-- Login Success Overlay -->
+    <div id="loginSuccessOverlay" class="success-overlay">
+        <div class="success-content">
+            <svg class="success-checkmark" viewBox="0 0 100 100">
+                <circle class="checkmark-circle" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="3" />
+                <polyline class="checkmark-circle" points="30,50 45,65 70,35" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Login Successful!</h3>
+            <p class="text-gray-600 mb-6">Welcome back! Redirecting to order page...</p>
+            <div class="flex justify-center">
+                <div class="w-2 h-2 bg-purple-600 rounded-full mx-1 animate-bounce" style="animation-delay: 0s;"></div>
+                <div class="w-2 h-2 bg-purple-600 rounded-full mx-1 animate-bounce" style="animation-delay: 0.2s;"></div>
+                <div class="w-2 h-2 bg-purple-600 rounded-full mx-1 animate-bounce" style="animation-delay: 0.4s;"></div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white shadow-lg z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold text-purple-600">🌟 NayaBottle</div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#" onclick="showPage('home')" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Beranda</a>
+                    <a href="#" onclick="showPage('menu')" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Menu</a>
+                    <a href="#" onclick="showPage('order')" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Pemesanan</a>
+                    <a href="#" onclick="showPage('contact')" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Kontak</a>
+                    <div id="authArea" class="ml-4"></div>
+                </div>
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+                <a href="#" onclick="showPage('home')" class="block text-gray-700 hover:text-purple-600">Beranda</a>
+                <a href="#" onclick="showPage('menu')" class="block text-gray-700 hover:text-purple-600">Menu</a>
+                <a href="#" onclick="showPage('order')" class="block text-gray-700 hover:text-purple-600">Pemesanan</a>
+                <a href="#" onclick="showPage('contact')" class="block text-gray-700 hover:text-purple-600">Kontak</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="home" class="page active relative z-10">
+        <section class="hero-gradient min-h-screen flex items-center pt-20">
+            <div class="container mx-auto px-6">
+                <div class="flex flex-col lg:flex-row items-center">
+                    <div class="lg:w-1/2 text-white">
+                        <h1 class="text-5xl lg:text-6xl font-bold mb-6">Tumbler Custom Impianmu! ✨</h1>
+                        <p class="text-xl mb-4">Wujudkan kreativitasmu dalam setiap tegukan! 💫</p>
+                        <p class="text-lg mb-8 opacity-90">Desain tumbler sesuai keinginanmu dengan kualitas premium dan harga terjangkau. Karena setiap momen berharga layak ditemani tumbler istimewa! 🎨</p>
+                        <div class="space-x-4">
+                            <button onclick="showPage('menu')" class="bg-white text-purple-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition">Lihat Menu</button>
+                            <button onclick="showPage('order')" class="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-purple-600 transition">Pesan Sekarang</button>
+                        </div>
+                    </div>
+                    <div class="lg:w-1/2 mt-10 lg:mt-0 flex justify-center">
+                        <div class="floating-tumbler">
+                            <svg width="300" height="400" viewBox="0 0 300 400" class="drop-shadow-2xl">
+                                <defs>
+                                    <linearGradient id="tumblerGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#ff6b6b"/>
+                                        <stop offset="100%" style="stop-color:#4ecdc4"/>
+                                    </linearGradient>
+                                </defs>
+                                <ellipse cx="150" cy="380" rx="60" ry="15" fill="rgba(0,0,0,0.2)"/>
+                                <rect x="80" y="80" width="140" height="280" rx="20" fill="url(#tumblerGrad1)"/>
+                                <rect x="85" y="85" width="130" height="270" rx="15" fill="rgba(255,255,255,0.1)"/>
+                                <circle cx="150" cy="50" r="25" fill="#333"/>
+                                <rect x="140" y="25" width="20" height="30" fill="#333"/>
+                                <text x="150" y="200" text-anchor="middle" fill="white" font-size="16" font-weight="bold">CUSTOM</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Features Section -->
+        <section class="py-20 bg-gray-50">
+            <div class="container mx-auto px-6">
+                <!-- Statistics Section -->
+                <div class="text-center mb-20">
+                    <h2 class="text-3xl font-bold mb-8 text-gray-800">Dipercaya Ribuan Pelanggan! 🎉</h2>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-xl shadow-lg">
+                            <div class="text-4xl font-bold mb-2">5000+</div>
+                            <p class="text-lg">Pelanggan Bahagia ❤️</p>
+                        </div>
+                        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow-lg">
+                            <div class="text-4xl font-bold mb-2">15000+</div>
+                            <p class="text-lg">Tumbler Terjual 🚀</p>
+                        </div>
+                        <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow-lg">
+                            <div class="text-4xl font-bold mb-2">4.9⭐</div>
+                            <p class="text-lg">Rating Kepuasan 🌟</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">Mengapa Pilih NayaBottle? 💎</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center p-6 bg-white rounded-lg shadow-lg">
+                        <div class="text-4xl mb-4">🎨</div>
+                        <h3 class="text-xl font-semibold mb-3">Desain Custom</h3>
+                        <p class="text-gray-600">Buat desain sesuai keinginanmu dengan berbagai pilihan warna dan motif</p>
+                    </div>
+                    <div class="text-center p-6 bg-white rounded-lg shadow-lg">
+                        <div class="text-4xl mb-4">⭐</div>
+                        <h3 class="text-xl font-semibold mb-3">Kualitas Premium</h3>
+                        <p class="text-gray-600">Material berkualitas tinggi yang tahan lama dan aman untuk minuman</p>
+                    </div>
+                    <div class="text-center p-6 bg-white rounded-lg shadow-lg">
+                        <div class="text-4xl mb-4">🚚</div>
+                        <h3 class="text-xl font-semibold mb-3">Pengiriman Cepat</h3>
+                        <p class="text-gray-600">Proses produksi cepat dengan pengiriman ke seluruh Indonesia</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Menu Page -->
+    <div id="menu" class="page relative z-10">
+        <section class="menu-gradient min-h-screen pt-20">
+            <div class="container mx-auto px-6 py-20">
+                <h1 class="text-5xl font-bold text-center text-white mb-6">Menu Tumbler Kami 🌈</h1>
+                <p class="text-xl text-center text-white mb-4">Koleksi Eksklusif untuk Setiap Gaya Hidupmu! ✨</p>
+                <p class="text-lg text-center text-white opacity-90 mb-16">Dari yang klasik hingga yang paling canggih, temukan tumbler yang sempurna untukmu! 💎</p>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Tumbler Classic -->
+                    <div class="tumbler-frame">
+                        <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
+                            <img src="https://modernandchicboutique.com/cdn/shop/products/Edited-9362_328d12cd-e64c-4dbe-bf3d-da6e6a87020f.jpg?v=1684526841&width=1100" alt="Tumbler Classic" class="h-full object-contain">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Tumbler Classic</h3>
+                        <p class="text-gray-600 mb-4">Tumbler standar dengan kapasitas 500ml, cocok untuk penggunaan sehari-hari</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-pink-600">Rp 75.000</span>
+                            <button onclick="selectTumbler('Classic', 75000)" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">Pilih</button>
+                        </div>
+                    </div>
+
+                    <!-- Tumbler Premium -->
+                    <div class="tumbler-frame">
+                        <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
+                            <img src="https://www.stanley1913.com/cdn/shop/files/093025_HP_Product_DT.jpg?v=1759271093" alt="Tumbler Premium" class="h-full object-contain">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Tumbler Premium</h3>
+                        <p class="text-gray-600 mb-4">Tumbler dengan isolasi ganda, menjaga suhu minuman hingga 8 jam</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-pink-600">Rp 125.000</span>
+                            <button onclick="selectTumbler('Premium', 125000)" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">Pilih</button>
+                        </div>
+                    </div>
+
+                    <!-- Tumbler Deluxe -->
+                    <div class="tumbler-frame">
+                        <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
+                            <img src="https://cdn.wconcept.com/products/resize/632x843/7201886/59/720188659_1.png" alt="Tumbler Deluxe" class="h-full object-contain">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Tumbler Deluxe</h3>
+                        <p class="text-gray-600 mb-4">Tumbler mewah dengan fitur LED dan teknologi smart temperature</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-pink-600">Rp 200.000</span>
+                            <button onclick="selectTumbler('Deluxe', 200000)" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">Pilih</button>
+                        </div>
+                    </div>
+
+                    <!-- Tumbler Kids -->
+                    <div class="tumbler-frame">
+                        <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
+                            <img src="https://i.etsystatic.com/32275367/r/il/d56f70/6297338791/il_1588xN.6297338791_a2gv.jpg" alt="Tumbler Kids" class="h-full object-contain">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Tumbler Kids</h3>
+                        <p class="text-gray-600 mb-4">Tumbler khusus anak-anak dengan desain lucu dan ukuran 350ml</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-pink-600">Rp 65.000</span>
+                            <button onclick="selectTumbler('Kids', 65000)" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">Pilih</button>
+                        </div>
+                    </div>
+
+                    <!-- Tumbler Sport -->
+                    <div class="tumbler-frame">
+                        <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
+                            <img src="https://i.etsystatic.com/53166939/r/il/6cf725/6894593244/il_1588xN.6894593244_b1mx.jpg" alt="Tumbler Sport" class="h-full object-contain">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Tumbler Sport</h3>
+                        <p class="text-gray-600 mb-4">Tumbler untuk aktivitas olahraga dengan tali dan tutup flip-top</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-pink-600">Rp 95.000</span>
+                            <button onclick="selectTumbler('Sport', 95000)" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">Pilih</button>
+                        </div>
+                    </div>
+
+                    <!-- Tumbler Couple -->
+                    <div class="tumbler-frame">
+                        <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
+                            <img src="https://m.media-amazon.com/images/I/71u9JfJL+LL._AC_SX679_.jpg" alt="Tumbler Couple" class="h-full object-contain">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Tumbler Couple</h3>
+                        <p class="text-gray-600 mb-4">Set tumbler untuk pasangan dengan desain matching yang romantis</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-pink-600">Rp 180.000</span>
+                            <button onclick="selectTumbler('Couple', 180000)" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">Pilih</button>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </section>
+    </div>
+
+    <!-- Login Page -->
+    <div id="login" class="page relative z-10">
+        <section class="min-h-screen pt-20 flex items-center">
+            <div class="container mx-auto px-6 py-20">
+                <div class="max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">Masuk untuk Melanjutkan Pemesanan</h2>
+                    <p class="text-sm text-gray-600 mb-6">Silakan masukkan email Anda. Jika belum terdaftar, cukup masukkan email untuk mencatat login.</p>
+                    <form id="loginForm" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-1">Email</label>
+                            <input id="loginEmail" type="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="name@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-1">Password (opsional)</label>
+                            <input id="loginPassword" type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="(boleh dikosongkan untuk demo)">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <button type="submit" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold">Masuk</button>
+                            <button type="button" onclick="showPage('home')" class="text-sm text-gray-500">Kembali</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Order Page -->
+    <div id="order" class="page relative z-10">
+        <section class="order-gradient min-h-screen pt-20">
+            <div class="container mx-auto px-6 py-20">
+                <h1 class="text-5xl font-bold text-center text-white mb-6">Form Pemesanan 🛍️</h1>
+                <p class="text-xl text-center text-white mb-4">Langkah Pertama Menuju Tumbler Impianmu! 🌟</p>
+                <p class="text-lg text-center text-white opacity-90 mb-16">Isi form dengan detail yang kamu inginkan, dan biarkan kami mewujudkan tumbler custom yang sempurna! 🎯</p>
+                
+                <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
+                    <form id="orderForm" onsubmit="submitOrder(event)">
+                        <div class="grid md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Nama Lengkap *</label>
+                                <input type="text" name="nama" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">No. WhatsApp *</label>
+                                <input type="tel" name="whatsapp" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Email</label>
+                            <input type="email" name="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Jenis Tumbler *</label>
+                                <select name="jenis" id="jenisSelect" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="updatePrice()">
+                                    <option value="">Pilih Jenis Tumbler</option>
+                                    <option value="Classic" data-price="75000">Classic - Rp 75.000</option>
+                                    <option value="Premium" data-price="125000">Premium - Rp 125.000</option>
+                                    <option value="Deluxe" data-price="200000">Deluxe - Rp 200.000</option>
+                                    <option value="Kids" data-price="65000">Kids - Rp 65.000</option>
+                                    <option value="Sport" data-price="95000">Sport - Rp 95.000</option>
+                                    <option value="Couple" data-price="180000">Couple - Rp 180.000</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Jumlah *</label>
+                                <input type="number" name="jumlah" id="jumlahInput" min="1" value="1" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="updatePrice()">
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Warna Favorit</label>
+                            <div class="grid grid-cols-4 gap-3">
+                                <label class="flex items-center">
+                                    <input type="radio" name="warna" value="Merah" class="mr-2">
+                                    <span class="w-6 h-6 bg-red-500 rounded-full mr-2"></span> Merah
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="warna" value="Biru" class="mr-2">
+                                    <span class="w-6 h-6 bg-blue-500 rounded-full mr-2"></span> Biru
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="warna" value="Hijau" class="mr-2">
+                                    <span class="w-6 h-6 bg-green-500 rounded-full mr-2"></span> Hijau
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="warna" value="Hitam" class="mr-2">
+                                    <span class="w-6 h-6 bg-black rounded-full mr-2"></span> Hitam
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Desain/Text Custom</label>
+                            <textarea name="desain" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Jelaskan desain yang diinginkan atau text yang ingin dicetak..."></textarea>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Alamat Lengkap *</label>
+                            <textarea name="alamat" rows="3" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan alamat lengkap untuk pengiriman..."></textarea>
+                        </div>
+
+                        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                            <div class="flex justify-between items-center text-lg">
+                                <span class="font-semibold">Total Harga:</span>
+                                <span id="totalPrice" class="font-bold text-blue-600 text-xl">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition transform hover:scale-105">
+                            🛒 Pesan Sekarang
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Order Tips Section -->
+                <div class="mt-16 bg-white rounded-2xl shadow-2xl p-8">
+                    <h2 class="text-2xl font-bold text-center mb-8 text-gray-800">💡 Tips Pemesanan</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-800 mb-2">📝 Desain yang Jelas</h3>
+                            <p class="text-blue-700 text-sm">Berikan deskripsi desain yang detail atau kirim contoh gambar untuk hasil terbaik</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-green-800 mb-2">📏 Ukuran Text</h3>
+                            <p class="text-green-700 text-sm">Text terlalu panjang akan diperkecil. Maksimal 20 karakter untuk hasil optimal</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-purple-800 mb-2">🎨 Pilihan Warna</h3>
+                            <p class="text-purple-700 text-sm">Warna gelap lebih tahan lama. Hindari warna terlalu terang untuk penggunaan harian</p>
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-orange-800 mb-2">📦 Pesanan Grosir</h3>
+                            <p class="text-orange-700 text-sm">Minimal 20 pcs untuk harga grosir. Hubungi kami untuk penawaran khusus</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="mt-12 bg-white rounded-2xl shadow-2xl p-8">
+                    <h2 class="text-2xl font-bold text-center mb-8 text-gray-800">💳 Metode Pembayaran</h2>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <div class="text-3xl mb-3">🏦</div>
+                            <h3 class="font-semibold mb-2">Transfer Bank</h3>
+                            <p class="text-gray-600 text-sm">BCA, Mandiri, BNI, BRI</p>
+                        </div>
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <div class="text-3xl mb-3">📱</div>
+                            <h3 class="font-semibold mb-2">E-Wallet</h3>
+                            <p class="text-gray-600 text-sm">GoPay, OVO, DANA, ShopeePay</p>
+                        </div>
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <div class="text-3xl mb-3">🚚</div>
+                            <h3 class="font-semibold mb-2">COD Makassar</h3>
+                            <p class="text-gray-600 text-sm">Bayar saat barang sampai</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- Contact Page -->
+    <div id="contact" class="page relative z-10">
+        <section class="contact-gradient min-h-screen pt-20">
+            <div class="container mx-auto px-6 py-20">
+                <h1 class="text-5xl font-bold text-center text-white mb-6">Hubungi Kami 💬</h1>
+                <p class="text-xl text-center text-white mb-4">Siap Membantu Mewujudkan Tumbler Impianmu! 🤝</p>
+                <p class="text-lg text-center text-white opacity-90 mb-16">Tim ramah kami selalu siaga untuk menjawab pertanyaan dan membantu proses pemesananmu! 💖</p>
+                
+                <div class="grid lg:grid-cols-2 gap-12">
+                    <!-- Contact Info -->
+                    <div class="text-white">
+                        <h2 class="text-3xl font-bold mb-8">Informasi Kontak</h2>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                    📍
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold">Alamat</h3>
+                                    <p>Jl. Rappocini No. 1, Makassar</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                    📞
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold">Telepon</h3>
+                                    <p>+62 823-4634-1129</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                    ✉️
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold">Email</h3>
+                                    <p>nayabottle@gmail.com</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                    🕒
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold">Jam Operasional</h3>
+                                    <p>Senin - Sabtu: 08:00 - 20:00<br>Minggu: 10:00 - 18:00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-8">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-800">Kirim Pesan</h2>
+                        
+                        <form id="contactForm" onsubmit="submitContact(event)">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Nama *</label>
+                                <input type="text" name="nama" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Email *</label>
+                                <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Subjek *</label>
+                                <input type="text" name="subjek" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Pesan *</label>
+                                <textarea name="pesan" rows="5" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Tulis pesan Anda di sini..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                                📧 Kirim Pesan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- FAQ Section -->
+                <div class="mt-20">
+                    <h2 class="text-3xl font-bold text-center text-white mb-12">Pertanyaan Sering Diajukan</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6">
+                            <h3 class="font-bold text-white mb-3">Berapa lama proses pembuatan?</h3>
+                            <p class="text-white text-opacity-90">Proses pembuatan tumbler custom memakan waktu 3-5 hari kerja tergantung kompleksitas desain.</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6">
+                            <h3 class="font-bold text-white mb-3">Apakah bisa pesan dalam jumlah besar?</h3>
+                            <p class="text-white text-opacity-90">Ya, kami melayani pesanan grosir dengan harga khusus untuk pembelian minimal 50 pcs.</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6">
+                            <h3 class="font-bold text-white mb-3">Bagaimana cara pembayaran?</h3>
+                            <p class="text-white text-opacity-90">Kami menerima pembayaran via transfer bank, e-wallet, dan COD untuk area Makassar.</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6">
+                            <h3 class="font-bold text-white mb-3">Apakah ada garansi?</h3>
+                            <p class="text-white text-opacity-90">Semua produk kami bergaransi 6 bulan untuk kerusakan manufaktur.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Media Section -->
+                <div class="mt-16">
+                    <h2 class="text-3xl font-bold text-center text-white mb-12">Follow Media Sosial Kami</h2>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6 text-center">
+                            <div class="text-4xl mb-4">📸</div>
+                            <h3 class="text-xl font-bold text-white mb-2">Instagram</h3>
+                            <p class="text-white text-opacity-90 mb-4">@nayabottle_official</p>
+                            <p class="text-white text-opacity-75 text-sm">Lihat galeri produk dan customer review terbaru</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6 text-center">
+                            <div class="text-4xl mb-4">💬</div>
+                            <h3 class="text-xl font-bold text-white mb-2">WhatsApp</h3>
+                            <p class="text-white text-opacity-90 mb-4">+62 823-4634-1129</p>
+                            <p class="text-white text-opacity-75 text-sm">Chat langsung untuk konsultasi dan pemesanan</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6 text-center">
+                            <div class="text-4xl mb-4">🎵</div>
+                            <h3 class="text-xl font-bold text-white mb-2">TikTok</h3>
+                            <p class="text-white text-opacity-90 mb-4">@nayabottle.id</p>
+                            <p class="text-white text-opacity-75 text-sm">Video proses pembuatan dan tips perawatan tumbler</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location & Delivery -->
+                <div class="mt-16">
+                    <h2 class="text-3xl font-bold text-center text-white mb-12">Area Pengiriman</h2>
+                    <div class="bg-white bg-opacity-10 rounded-lg p-8">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-xl font-bold text-white mb-4">🚚 Pengiriman Reguler</h3>
+                                <ul class="text-white text-opacity-90 space-y-2">
+                                    <li>• Seluruh Indonesia via JNE, J&T, SiCepat</li>
+                                    <li>• Estimasi 2-4 hari kerja</li>
+                                    <li>• Gratis ongkir untuk pembelian >500rb</li>
+                                    <li>• Asuransi pengiriman tersedia</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white mb-4">🏃‍♂️ Same Day & COD</h3>
+                                <ul class="text-white text-opacity-90 space-y-2">
+                                    <li>• Makassar, Bogor, Depok, Tangerang, Bekasi</li>
+                                    <li>• Same day delivery tersedia</li>
+                                    <li>• COD (Cash on Delivery) available</li>
+                                    <li>• Kurir profesional dan terpercaya</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 relative z-10">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4">🌟 NayaBottle</h3>
+                    <p class="text-gray-400 mb-4">Spesialis tumbler custom berkualitas tinggi dengan desain sesuai keinginan Anda. Wujudkan kreativitas dalam setiap tegukan! ✨</p>
+                    <div class="flex space-x-4">
+                        <a href="https://wa.me/6282346341129" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 p-3 rounded-full transition">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                            </svg>
+                        </a>
+                        <a href="https://instagram.com/nayabottle" target="_blank" rel="noopener noreferrer" class="bg-pink-500 hover:bg-pink-600 p-3 rounded-full transition">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Produk</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" onclick="showPage('menu')" class="hover:text-white transition">Tumbler Classic</a></li>
+                        <li><a href="#" onclick="showPage('menu')" class="hover:text-white transition">Tumbler Premium</a></li>
+                        <li><a href="#" onclick="showPage('menu')" class="hover:text-white transition">Tumbler Deluxe</a></li>
+                        <li><a href="#" onclick="showPage('menu')" class="hover:text-white transition">Tumbler Kids</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Layanan</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" onclick="showPage('order')" class="hover:text-white transition">Custom Design</a></li>
+                        <li><a href="#" class="hover:text-white transition">Pengiriman Cepat</a></li>
+                        <li><a href="#" class="hover:text-white transition">Garansi Produk</a></li>
+                        <li><a href="#" onclick="showPage('contact')" class="hover:text-white transition">Customer Support</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Informasi</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" onclick="showPage('contact')" class="hover:text-white transition">Tentang Kami</a></li>
+                        <li><a href="#" onclick="showPage('contact')" class="hover:text-white transition">Kontak</a></li>
+                        <li><a href="#" class="hover:text-white transition">Kebijakan Privasi</a></li>
+                        <li><a href="#" class="hover:text-white transition">Syarat & Ketentuan</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 NayaBottle. Semua hak cipta dilindungi. | Dibuat dengan ❤️ untuk pecinta tumbler yang istimewa ✨</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let currentPage = 'home';
+        
+        // Page navigation (require login for order)
+        function showPage(pageId) {
+            // If attempting to access order, require login
+            if (pageId === 'order' && !getLoggedMember()) {
+                alert('Silakan login terlebih dahulu untuk melanjutkan pemesanan.');
+                pageId = 'login';
+            }
+
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            currentPage = pageId;
+
+            // Close mobile menu
+            document.getElementById('mobile-menu').classList.add('hidden');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+            renderAuthArea();
+        }
+        
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        }
+        
+        // Select tumbler from menu
+        function selectTumbler(type, price) {
+            showPage('order');
+            document.getElementById('jenisSelect').value = type;
+            updatePrice();
+        }
+        
+        // Update price calculation
+        function updatePrice() {
+            const jenisSelect = document.getElementById('jenisSelect');
+            const jumlahInput = document.getElementById('jumlahInput');
+            const totalPriceElement = document.getElementById('totalPrice');
+            
+            if (jenisSelect.value && jumlahInput.value) {
+                const selectedOption = jenisSelect.options[jenisSelect.selectedIndex];
+                const price = parseInt(selectedOption.dataset.price);
+                const quantity = parseInt(jumlahInput.value);
+                const total = price * quantity;
+                
+                totalPriceElement.textContent = 'Rp ' + total.toLocaleString('id-ID');
+            } else {
+                totalPriceElement.textContent = 'Rp 0';
+            }
+        }
+        
+        // Submit order form
+        async function submitOrder(event) {
+            event.preventDefault();
+            // Require login before submitting order
+            if (!getLoggedMember()) {
+                alert('Anda harus login terlebih dahulu sebelum memesan.');
+                showPage('login');
+                return;
+            }
+            
+            const formData = new FormData(event.target);
+            const orderData = {};
+            
+            // Collect form data
+            for (let [key, value] of formData.entries()) {
+                orderData[key] = value;
+            }
+            
+            // Add timestamp and order ID
+            orderData.timestamp = new Date().toLocaleString('id-ID');
+            orderData.orderId = 'NB' + Date.now(); // Generate unique order ID
+            
+            // Calculate total
+            const jenisSelect = document.getElementById('jenisSelect');
+            const selectedOption = jenisSelect.options[jenisSelect.selectedIndex];
+            const price = parseInt(selectedOption.dataset.price);
+            const quantity = parseInt(orderData.jumlah);
+            orderData.total = price * quantity;
+            orderData.totalFormatted = 'Rp ' + orderData.total.toLocaleString('id-ID');
+            
+            // Show loading state
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '⏳ Mengirim pesanan...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Send to Google Sheets
+                const result = await sendToGoogleSheets(orderData, 'order');
+                
+                if (result.success) {
+                    alert(`✅ Terima kasih! Pesanan Anda telah diterima.\n\nID Pesanan: ${orderData.orderId}\nTotal: ${orderData.totalFormatted}\n\nTim kami akan segera menghubungi Anda via WhatsApp.`);
+                    
+                    // Reset form
+                    event.target.reset();
+                    updatePrice();
+                } else {
+                    alert('⚠️ Pesanan berhasil dicatat, namun ada kendala teknis. Tim kami akan segera menghubungi Anda.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('⚠️ Pesanan berhasil dicatat, namun ada kendala teknis. Tim kami akan segera menghubungi Anda.');
+            } finally {
+                // Restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // Submit contact form
+        async function submitContact(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const contactData = {};
+            
+            // Collect form data
+            for (let [key, value] of formData.entries()) {
+                contactData[key] = value;
+            }
+            
+            // Add timestamp and message ID
+            contactData.timestamp = new Date().toLocaleString('id-ID');
+            contactData.messageId = 'MSG' + Date.now(); // Generate unique message ID
+            
+            // Show loading state
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '⏳ Mengirim pesan...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Send to Google Sheets
+                const result = await sendToGoogleSheets(contactData, 'contact');
+                
+                if (result.success) {
+                    alert(`✅ Terima kasih! Pesan Anda telah terkirim.\n\nID Pesan: ${contactData.messageId}\n\nKami akan merespons dalam 24 jam.`);
+                    
+                    // Reset form
+                    event.target.reset();
+                } else {
+                    alert('⚠️ Pesan berhasil dicatat, namun ada kendala teknis. Kami akan segera merespons.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('⚠️ Pesan berhasil dicatat, namun ada kendala teknis. Kami akan segera merespons.');
+            } finally {
+                // Restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // Google Sheets Configuration - PASTE YOUR DEPLOYMENT URLS HERE
+        const GOOGLE_SHEETS_CONFIG = {
+            ORDER_URL: 'https://script.google.com/macros/s/AKfycbwSvJKTtauV9n2Yid1M2urXu0e5niCzxnEoYL-S0JN7TPeLcmdYijy-Pwe7UbijEInk/exec',     // Paste your Google Apps Script deployment URL for orders
+            CONTACT_URL: 'https://script.google.com/macros/s/AKfycbwSvJKTtauV9n2Yid1M2urXu0e5niCzxnEoYL-S0JN7TPeLcmdYijy-Pwe7UbijEInk/exec'  // Paste your Google Apps Script deployment URL for contacts
+        };
+        // Add LOGIN_URL to capture login events (paste your Apps Script URL here)
+        GOOGLE_SHEETS_CONFIG.LOGIN_URL = 'https://script.google.com/macros/s/PASTE_YOUR_LOGIN_DEPLOY/exec';
+        
+        // Google Sheets integration function
+        async function sendToGoogleSheets(data, type) {
+            let url;
+            if (type === 'order') url = GOOGLE_SHEETS_CONFIG.ORDER_URL;
+            else if (type === 'contact') url = GOOGLE_SHEETS_CONFIG.CONTACT_URL;
+            else if (type === 'login') url = GOOGLE_SHEETS_CONFIG.LOGIN_URL;
+            else url = null;
+            
+            if (!url || url.includes('PASTE_')) {
+                console.warn('Google Sheets URL belum dikonfigurasi untuk:', type);
+                return { success: false, error: 'URL belum dikonfigurasi' };
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors', // Required for Google Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                // Note: no-cors mode doesn't allow reading response, so we assume success
+                console.log('Data berhasil dikirim ke Google Sheets:', type);
+                return { success: true };
+                
+            } catch (error) {
+                console.error('Error mengirim ke Google Sheets:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Create corner floating tumblers
+        function createCornerTumblers() {
+            const corners = [
+                { left: '2%', top: '15%' },      // Kiri atas
+                { right: '2%', top: '15%' },     // Kanan atas  
+                { left: '2%', bottom: '15%' },   // Kiri bawah
+                { right: '2%', bottom: '15%' }   // Kanan bawah
+            ];
+            
+            corners.forEach((position, index) => {
+                const tumbler = document.createElement('div');
+                tumbler.className = 'fixed opacity-80 pointer-events-none';
+                tumbler.style.zIndex = '100';
+                
+                // Set position
+                Object.keys(position).forEach(key => {
+                    tumbler.style[key] = position[key];
+                });
+                
+                const size = 80;
+                const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'];
+                const color = colors[index];
+                
+                // Different animation for each corner
+                const animations = ['float', 'floatSlow', 'floatReverse', 'floatGentle'];
+                tumbler.style.animation = `${animations[index]} ${4 + index}s ease-in-out infinite`;
+                
+                tumbler.innerHTML = `
+                    <svg width="${size}" height="${size * 1.3}" viewBox="0 0 ${size} ${size * 1.3}">
+                        <rect x="${size * 0.2}" y="${size * 0.2}" width="${size * 0.6}" height="${size * 0.9}" rx="${size * 0.08}" fill="${color}"/>
+                        <circle cx="${size * 0.5}" cy="${size * 0.15}" r="${size * 0.12}" fill="#333"/>
+                        <rect x="${size * 0.45}" y="${size * 0.05}" width="${size * 0.1}" height="${size * 0.15}" fill="#333"/>
+                    </svg>
+                `;
+                
+                document.body.appendChild(tumbler);
+            });
+        }
+        
+        // Add corner animations to CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes floatSlow {
+                0%, 100% { transform: translateY(0px) rotate(-2deg); }
+                50% { transform: translateY(-25px) rotate(2deg); }
+            }
+            
+            @keyframes floatReverse {
+                0%, 100% { transform: translateY(-15px) rotate(3deg); }
+                50% { transform: translateY(10px) rotate(-3deg); }
+            }
+            
+            @keyframes floatGentle {
+                0%, 100% { transform: translateY(-10px) rotate(-1deg); }
+                50% { transform: translateY(-30px) rotate(1deg); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            showPage('home');
+            
+            // Create corner tumblers only once
+            createCornerTumblers();
+            renderAuthArea();
+        });
+
+        // --- Simple client-side auth helpers ---
+        function getLoggedMember() {
+            try { return JSON.parse(localStorage.getItem('loggedMember') || 'null'); } catch (e) { return null; }
+        }
+
+        function setLoggedMember(obj) {
+            localStorage.setItem('loggedMember', JSON.stringify(obj));
+            renderAuthArea();
+        }
+
+        function clearLoggedMember() {
+            localStorage.removeItem('loggedMember');
+            renderAuthArea();
+        }
+
+        // Render auth area in nav
+        function renderAuthArea() {
+            const area = document.getElementById('authArea');
+            if (!area) return;
+            const lm = getLoggedMember();
+            if (lm) {
+                const profile = loadProfile(lm.email) || {};
+                const displayName = profile.displayName || lm.email.split('@')[0];
+                const initials = getInitials(lm.email);
+                
+                let profileButton = '';
+                if (profile.avatarDataUrl) {
+                    profileButton = `<img src="${profile.avatarDataUrl}" class="w-7 h-7 rounded-full object-cover" alt="avatar" />`;
+                } else {
+                    profileButton = `<div class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-semibold">${initials}</div>`;
+                }
+                
+                area.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <button onclick="showProfileModal()" class="flex items-center gap-2 bg-white px-3 py-1 rounded shadow-sm hover:shadow-md transition">
+                            ${profileButton}
+                            <span class="text-sm text-gray-700">${escapeHtml(displayName)}</span>
+                        </button>
+                        <button onclick="logoutUser()" class="bg-transparent border border-purple-600 text-purple-600 px-3 py-1 rounded text-sm hover:bg-purple-50 transition">Logout</button>
+                    </div>
+                `;
+            } else {
+                area.innerHTML = `<button onclick="showPage('login')" class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition">Login</button>`;
+            }
+        }
+
+        function logoutUser() {
+            clearLoggedMember();
+            alert('You have been logged out.');
+            showPage('home');
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function (s) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]; });
+        }
+
+        // Login form handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const lf = document.getElementById('loginForm');
+            if (!lf) return;
+            lf.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value || '';
+                if (!email) { alert('Please enter your email to login'); return; }
+
+                const memberObj = { email: email, loggedAt: new Date().toISOString() };
+                setLoggedMember(memberObj);
+
+                // Send login event to Google Sheets (best-effort; no-cors)
+                try { await sendToGoogleSheets({ email: email, timestamp: memberObj.loggedAt }, 'login'); } catch(e) { console.warn('Login log failed', e); }
+
+                // Ensure a profile exists
+                let profile = loadProfile(email) || {};
+                profile.displayName = profile.displayName || email.split('@')[0];
+                profile.joinedAt = profile.joinedAt || new Date().toLocaleString('en-US');
+                saveProfileToStorage(email, profile);
+
+                renderAuthArea();
+
+                // Show success overlay
+                const overlay = document.getElementById('loginSuccessOverlay');
+                overlay.classList.add('show');
+
+                // Redirect after 2.5 seconds
+                setTimeout(() => {
+                    overlay.classList.remove('show');
+                    showPage('order');
+                }, 2500);
+            });
+        });
+
+        // --- Profile helpers ---
+        function getInitials(email) {
+            const name = (email || '').split('@')[0] || '';
+            const parts = name.split(/[._\- ]+/).filter(Boolean);
+            if (parts.length === 0) return (name[0] || '?').toUpperCase();
+            if (parts.length === 1) return (parts[0][0] || '?').toUpperCase();
+            return ((parts[0][0] || '') + (parts[1][0] || '')).toUpperCase();
+        }
+
+        function getProfileKey(email) {
+            return 'profile_' + (email || '').toLowerCase();
+        }
+
+        function loadProfile(email) {
+            try { return JSON.parse(localStorage.getItem(getProfileKey(email)) || 'null'); } catch (e) { return null; }
+        }
+
+        function saveProfileToStorage(email, profileObj) {
+            localStorage.setItem(getProfileKey(email), JSON.stringify(profileObj));
+        }
+
+        function showProfileModal() {
+            const lm = getLoggedMember();
+            if (!lm || !lm.email) { alert('Please login first.'); showPage('login'); return; }
+            
+            const profile = loadProfile(lm.email) || {
+                displayName: lm.email.split('@')[0],
+                email: lm.email,
+                avatarDataUrl: null,
+                joinedAt: new Date().toLocaleString('en-US')
+            };
+
+            // Populate modal
+            const avatarImg = document.getElementById('profileAvatarImg');
+            const initials = document.getElementById('profileInitials');
+            if (profile.avatarDataUrl) {
+                avatarImg.src = profile.avatarDataUrl;
+                avatarImg.style.display = 'block';
+                initials.style.display = 'none';
+            } else {
+                avatarImg.style.display = 'none';
+                initials.style.display = 'block';
+                initials.textContent = getInitials(lm.email);
+            }
+            
+            document.getElementById('profileDisplayName').value = profile.displayName || '';
+            document.getElementById('profileEmailLabel').textContent = lm.email;
+            document.getElementById('profileJoinedLabel').textContent = profile.joinedAt || new Date().toLocaleString('en-US');
+
+            const modal = document.getElementById('profileModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Avatar file input handler
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'profileAvatarInput') {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const avatarImg = document.getElementById('profileAvatarImg');
+                    const initials = document.getElementById('profileInitials');
+                    avatarImg.src = ev.target.result;
+                    avatarImg.style.display = 'block';
+                    initials.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Save profile to localStorage
+        function saveProfile() {
+            const lm = getLoggedMember();
+            if (!lm || !lm.email) { showPage('login'); return; }
+            
+            const email = lm.email;
+            const displayName = document.getElementById('profileDisplayName').value.trim() || email.split('@')[0];
+            const avatarImg = document.getElementById('profileAvatarImg');
+            const avatarDataUrl = avatarImg && avatarImg.src && avatarImg.src.indexOf('data:') === 0 ? avatarImg.src : null;
+            
+            const profile = loadProfile(email) || {};
+            profile.displayName = displayName;
+            profile.avatarDataUrl = avatarDataUrl || profile.avatarDataUrl || null;
+            profile.joinedAt = profile.joinedAt || new Date().toLocaleString('en-US');
+            
+            saveProfileToStorage(email, profile);
+            renderAuthArea();
+            alert('Profile saved successfully!');
+            closeProfileModal();
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a4de301125df9f',t:'MTc1OTc1MDY1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
