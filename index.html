@@ -83,73 +83,90 @@
         .nav-link:hover {
             transform: translateY(-2px);
         }
-
-        @keyframes slideInScale {
-            0% { transform: scale(0.5) translateY(-50px); opacity: 0; }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+        
+        /* Animasi Confetti */
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotateX(0deg) rotateZ(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotateX(720deg) rotateZ(360deg);
+                opacity: 0;
+            }
         }
-
-        @keyframes checkmark {
-            0% { stroke-dashoffset: 100; }
-            100% { stroke-dashoffset: 0; }
+        
+        @keyframes confetti-rise {
+            0% {
+                transform: translateY(0) rotateX(0deg) rotateZ(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotateX(720deg) rotateZ(360deg);
+                opacity: 0;
+            }
         }
-
-        .success-overlay {
-            display: none;
+        
+        @keyframes scale-pop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes bounce-success {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        
+        .confetti {
             position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            width: 10px;
+            height: 10px;
             z-index: 9999;
-            
-            justify-content: center;
+            pointer-events: none;
         }
-
-        .success-overlay.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        
+        .confetti.fall {
+            animation: confetti-fall 3s ease-in forwards;
         }
-
-        .success-content {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            animation: slideInScale 0.6s ease-out;
+        
+        .confetti.rise {
+            animation: confetti-rise 3s ease-in forwards;
         }
-
+        
+        .success-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 90%;
+            max-width: 450px;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 10000;
+            animation: scale-pop 0.6s ease-out forwards;
+        }
+        
+        .success-badge {
+            animation: bounce-success 0.8s ease-out;
+        }
+        
         .success-checkmark {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-        }
-
-        .checkmark-circle {
-            stroke-dasharray: 100;
-            stroke-dashoffset: 100;
-            animation: checkmark 0.8s ease-out 0.2s forwards;
+            animation: scale-pop 0.6s ease-out 0.3s both;
         }
     </style>
 </head>
 <body class="font-sans">
-
-    <!-- Login Success Overlay -->
-    <div id="loginSuccessOverlay" class="success-overlay">
-        <div class="success-content">
-            <svg class="success-checkmark" viewBox="0 0 100 100">
-                <circle class="checkmark-circle" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="3" />
-                <polyline class="checkmark-circle" points="30,50 45,65 70,35" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <h3 class="text-2xl font-bold text-gray-800 mb-2">Login Successful!</h3>
-            <p class="text-gray-600 mb-6">Welcome back! Redirecting to order page...</p>
-            <div class="flex justify-center">
-                <div class="w-2 h-2 bg-purple-600 rounded-full mx-1 animate-bounce" style="animation-delay: 0s;"></div>
-                <div class="w-2 h-2 bg-purple-600 rounded-full mx-1 animate-bounce" style="animation-delay: 0.2s;"></div>
-                <div class="w-2 h-2 bg-purple-600 rounded-full mx-1 animate-bounce" style="animation-delay: 0.4s;"></div>
-            </div>
-        </div>
-    </div>
 
     
     <!-- Navigation -->
@@ -162,7 +179,8 @@
                     <a href="#" onclick="showPage('menu')" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Menu</a>
                     <a href="#" onclick="showPage('order')" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Pemesanan</a>
                     <a href="#" onclick="showPage('contact')" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Kontak</a>
-                    <div id="authArea" class="ml-4"></div>
+                    <a href="#" onclick="showPage('membership')" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Membership</a>
+                    <button onclick="toggleMemberMenu()" class="nav-link text-gray-700 hover:text-purple-600 font-medium">👤 Member</button>
                 </div>
                 <div class="md:hidden">
                     <button onclick="toggleMobileMenu()" class="text-gray-700">
@@ -177,9 +195,16 @@
                 <a href="#" onclick="showPage('menu')" class="block text-gray-700 hover:text-purple-600">Menu</a>
                 <a href="#" onclick="showPage('order')" class="block text-gray-700 hover:text-purple-600">Pemesanan</a>
                 <a href="#" onclick="showPage('contact')" class="block text-gray-700 hover:text-purple-600">Kontak</a>
+                <a href="#" onclick="showPage('membership')" class="block text-gray-700 hover:text-purple-600">Membership</a>
+                <button onclick="toggleMemberMenu()" class="block w-full text-left text-gray-700 hover:text-purple-600 py-2">👤 Member</button>
             </div>
         </div>
     </nav>
+
+    <!-- Member Dropdown Menu -->
+    <div id="memberDropdown" class="fixed top-16 right-6 bg-white rounded-lg shadow-lg z-40 hidden md:block min-w-48">
+        <div id="memberDropdownContent"></div>
+    </div>
 
     <!-- Home Page -->
     <div id="home" class="page active relative z-10">
@@ -273,7 +298,7 @@
                     <!-- Tumbler Classic -->
                     <div class="tumbler-frame">
                         <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
-                            <img src="https://modernandchicboutique.com/cdn/shop/products/Edited-9362_328d12cd-e64c-4dbe-bf3d-da6e6a87020f.jpg?v=1684526841&width=1100" alt="Tumbler Classic" class="h-full object-contain">
+                            <img src="classic.jpg" alt="Tumbler Classic" class="h-full object-contain">
                         </div>
                         <h3 class="text-xl font-bold mb-2">Tumbler Classic</h3>
                         <p class="text-gray-600 mb-4">Tumbler standar dengan kapasitas 500ml, cocok untuk penggunaan sehari-hari</p>
@@ -286,7 +311,7 @@
                     <!-- Tumbler Premium -->
                     <div class="tumbler-frame">
                         <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
-                            <img src="https://www.stanley1913.com/cdn/shop/files/093025_HP_Product_DT.jpg?v=1759271093" alt="Tumbler Premium" class="h-full object-contain">
+                            <img src="premium.jpg" alt="Tumbler Premium" class="h-full object-contain">
                         </div>
                         <h3 class="text-xl font-bold mb-2">Tumbler Premium</h3>
                         <p class="text-gray-600 mb-4">Tumbler dengan isolasi ganda, menjaga suhu minuman hingga 8 jam</p>
@@ -299,7 +324,7 @@
                     <!-- Tumbler Deluxe -->
                     <div class="tumbler-frame">
                         <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
-                            <img src="https://cdn.wconcept.com/products/resize/632x843/7201886/59/720188659_1.png" alt="Tumbler Deluxe" class="h-full object-contain">
+                            <img src="deluxe.jpg" alt="Tumbler Deluxe" class="h-full object-contain">
                         </div>
                         <h3 class="text-xl font-bold mb-2">Tumbler Deluxe</h3>
                         <p class="text-gray-600 mb-4">Tumbler mewah dengan fitur LED dan teknologi smart temperature</p>
@@ -312,7 +337,7 @@
                     <!-- Tumbler Kids -->
                     <div class="tumbler-frame">
                         <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
-                            <img src="https://i.etsystatic.com/32275367/r/il/d56f70/6297338791/il_1588xN.6297338791_a2gv.jpg" alt="Tumbler Kids" class="h-full object-contain">
+                            <img src="kids.jpg" alt="Tumbler Kids" class="h-full object-contain">
                         </div>
                         <h3 class="text-xl font-bold mb-2">Tumbler Kids</h3>
                         <p class="text-gray-600 mb-4">Tumbler khusus anak-anak dengan desain lucu dan ukuran 350ml</p>
@@ -325,7 +350,7 @@
                     <!-- Tumbler Sport -->
                     <div class="tumbler-frame">
                         <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
-                            <img src="https://i.etsystatic.com/53166939/r/il/6cf725/6894593244/il_1588xN.6894593244_b1mx.jpg" alt="Tumbler Sport" class="h-full object-contain">
+                            <img src="sport.jpg" alt="Tumbler Sport" class="h-full object-contain">
                         </div>
                         <h3 class="text-xl font-bold mb-2">Tumbler Sport</h3>
                         <p class="text-gray-600 mb-4">Tumbler untuk aktivitas olahraga dengan tali dan tutup flip-top</p>
@@ -338,7 +363,7 @@
                     <!-- Tumbler Couple -->
                     <div class="tumbler-frame">
                         <div class="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center border-2 border-dashed border-gray-400">
-                            <img src="https://m.media-amazon.com/images/I/71u9JfJL+LL._AC_SX679_.jpg" alt="Tumbler Couple" class="h-full object-contain">
+                            <img src="couple.jpg" alt="Tumbler Couple" class="h-full object-contain">
                         </div>
                         <h3 class="text-xl font-bold mb-2">Tumbler Couple</h3>
                         <p class="text-gray-600 mb-4">Set tumbler untuk pasangan dengan desain matching yang romantis</p>
@@ -350,32 +375,6 @@
                 </div>
 
 
-            </div>
-        </section>
-    </div>
-
-    <!-- Login Page -->
-    <div id="login" class="page relative z-10">
-        <section class="min-h-screen pt-20 flex items-center">
-            <div class="container mx-auto px-6 py-20">
-                <div class="max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8">
-                    <h2 class="text-2xl font-bold mb-4 text-gray-800">Masuk untuk Melanjutkan Pemesanan</h2>
-                    <p class="text-sm text-gray-600 mb-6">Silakan masukkan email Anda. Jika belum terdaftar, cukup masukkan email untuk mencatat login.</p>
-                    <form id="loginForm" class="space-y-4">
-                        <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-1">Email</label>
-                            <input id="loginEmail" type="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="name@example.com">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-1">Password (opsional)</label>
-                            <input id="loginPassword" type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="(boleh dikosongkan untuk demo)">
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <button type="submit" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold">Masuk</button>
-                            <button type="button" onclick="showPage('home')" class="text-sm text-gray-500">Kembali</button>
-                        </div>
-                    </form>
-                </div>
             </div>
         </section>
     </div>
@@ -685,6 +684,506 @@
         </section>
     </div>
 
+    <!-- Membership Purchase Modal/Page -->
+    <div id="membershipPurchase" class="page fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <!-- Close Button -->
+            <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 flex justify-between items-center">
+                <h2 class="text-2xl font-bold">Daftar Membership 🌟</h2>
+                <button onclick="closeMembershipPurchase()" class="text-2xl hover:text-pink-200">✕</button>
+            </div>
+
+            <div class="p-8">
+                <!-- Membership Info -->
+                <div id="membershipInfo" class="mb-8 p-6 rounded-lg border-2"></div>
+
+                <!-- Registration Form -->
+                <form id="membershipForm" onsubmit="submitMembership(event)">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Nama Lengkap *</label>
+                            <input type="text" name="nama" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Masukkan nama lengkap Anda">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Email *</label>
+                            <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Masukkan email Anda">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Password *</label>
+                            <input type="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Buat password minimal 6 karakter">
+                            <p class="text-sm text-gray-500 mt-2">Password minimal 6 karakter</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Konfirmasi Password *</label>
+                            <input type="password" name="confirmPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Konfirmasi password Anda">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">No. WhatsApp</label>
+                            <input type="tel" name="whatsapp" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Contoh: 0823-4634-1129">
+                        </div>
+
+                        <!-- Harga dan Button -->
+                        <div class="bg-gray-100 p-6 rounded-lg">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold text-gray-800">Total Pembayaran:</span>
+                                <span id="totalPayment" class="text-3xl font-bold text-purple-600">Rp 0</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">💡 Pembayaran dapat dilakukan via Transfer Bank, E-Wallet, atau COD</p>
+                            
+                            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-lg font-semibold text-lg hover:shadow-lg transition transform hover:scale-105">
+                                ✅ Daftar & Bayar Sekarang
+                            </button>
+                        </div>
+
+                        <p class="text-xs text-gray-500 text-center">Dengan mendaftar, Anda setuju dengan Syarat & Ketentuan kami</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Dashboard -->
+    <div id="memberDashboard" class="page relative z-10">
+        <section class="min-h-screen pt-20 bg-gray-50">
+            <div class="container mx-auto px-6 py-20">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-12">
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-800">Dashboard Member 👋</h1>
+                        <p class="text-gray-600 mt-2">Selamat datang, <span id="memberName" class="font-bold text-purple-600"></span>!</p>
+                    </div>
+                    <button onclick="logout()" class="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition">
+                        🚪 Logout
+                    </button>
+                </div>
+
+                <!-- Member Info Cards -->
+                <div class="grid md:grid-cols-3 gap-6 mb-12">
+                    <!-- Tier Card -->
+                    <div id="tierCard" class="rounded-2xl shadow-lg p-8 text-white"></div>
+
+                    <!-- Poin Card -->
+                    <div class="bg-gradient-to-br from-green-500 to-teal-500 rounded-2xl shadow-lg p-8 text-white">
+                        <div class="text-sm opacity-90 mb-2">Poin Reward</div>
+                        <div class="text-4xl font-bold mb-2">0</div>
+                        <p class="text-sm opacity-75">Tukarkan dengan voucher</p>
+                    </div>
+
+                    <!-- Member Info -->
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h3 class="font-bold text-gray-800 mb-4">Informasi Member</h3>
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <p class="text-gray-500">Email</p>
+                                <p id="memberEmail" class="font-semibold text-gray-800"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Bergabung</p>
+                                <p id="memberJoinDate" class="font-semibold text-gray-800"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid md:grid-cols-2 gap-6 mb-12">
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">🛍️ Lanjut Belanja</h3>
+                        <button onclick="showPage('menu')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                            Lihat Menu Tumbler
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">👤 Profil</h3>
+                        <button onclick="alert('Fitur edit profil akan segera tersedia')" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                            Edit Profil
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Membership Benefits -->
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">💎 Keuntungan Membership Anda</h2>
+                    <div id="memberBenefits" class="grid md:grid-cols-2 gap-6"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Membership -->
+    <div id="membership" class="page relative z-10">
+        <section class="min-h-screen pt-20 bg-gradient-to-b from-gray-50 to-white">
+            <div class="container mx-auto px-6 py-20">
+                <div class="text-center mb-16">
+                    <h1 class="text-5xl lg:text-6xl font-bold mb-6 text-gray-800">Program Membership NayaBottle 🌟</h1>
+                    <p class="text-xl text-gray-600 mb-4">Nikmati berbagai keuntungan eksklusif dengan menjadi member kami!</p>
+                    <p class="text-lg text-gray-500">Semakin tinggi tier kamu, semakin besar keuntungannya! 🚀</p>
+                </div>
+
+                <!-- Membership Tiers -->
+                <div class="grid md:grid-cols-3 gap-8 mb-20">
+                    <!-- Bronze Tier -->
+                    <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition duration-300">
+                        <div class="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-8 text-center">
+                            <div class="text-5xl mb-3">🥉</div>
+                            <h2 class="text-3xl font-bold mb-2">Bronze Member</h2>
+                            <p class="text-amber-100 text-lg font-semibold">Harga</p>
+                            <p class="text-4xl font-bold mt-2">Rp 50.000</p>
+                            <p class="text-amber-100 text-sm mt-3">Pembayaran sekali untuk akses selamanya</p>
+                        </div>
+                        
+                        <div class="p-8">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Keuntungan Eksklusif:</h3>
+                            
+                            <ul class="space-y-4 mb-8">
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✅</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Diskon 5%</p>
+                                        <p class="text-sm text-gray-600">Untuk setiap pembelian tumbler</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✅</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Poin Reward</p>
+                                        <p class="text-sm text-gray-600">Kumpulkan setiap transaksi</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✅</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Info Produk Terbaru</p>
+                                        <p class="text-sm text-gray-600">Update eksklusif via WhatsApp</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✅</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Customer Support</p>
+                                        <p class="text-sm text-gray-600">Bantuan 24/7 dari tim kami</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✅</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Garansi 6 Bulan</p>
+                                        <p class="text-sm text-gray-600">Perlindungan produk penuh</p>
+                                    </div>
+                                </li>
+                            </ul>
+
+                            <button onclick="showMembershipPurchase('bronze', 50000)" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition transform hover:scale-105">
+                                💳 Beli Sekarang
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Silver Tier -->
+                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl shadow-2xl overflow-hidden transform hover:scale-105 transition duration-300 border-2 border-slate-300 relative">
+                        <div class="absolute -top-3 -right-3">
+                            <span class="bg-red-500 text-white px-4 py-1 rounded-full text-xs font-bold">POPULER</span>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-slate-600 to-slate-800 text-white p-8 text-center">
+                            <div class="text-5xl mb-3">🥈</div>
+                            <h2 class="text-3xl font-bold mb-2">Silver Member</h2>
+                            <p class="text-slate-200 text-lg font-semibold">Harga</p>
+                            <p class="text-4xl font-bold mt-2">Rp 100.000</p>
+                            <p class="text-slate-100 text-sm mt-3">Pembayaran sekali untuk akses selamanya</p>
+                        </div>
+                        
+                        <div class="p-8">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Keuntungan Eksklusif:</h3>
+                            
+                            <ul class="space-y-4 mb-8">
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✨</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Diskon 12%</p>
+                                        <p class="text-sm text-gray-600">Untuk semua pembelian</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✨</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Poin Reward 1.5x</p>
+                                        <p class="text-sm text-gray-600">Kumpulkan lebih cepat</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✨</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Gratis Ongkir</p>
+                                        <p class="text-sm text-gray-600">Untuk pembelian diatas Rp 300rb</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✨</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Akses Early Bird</p>
+                                        <p class="text-sm text-gray-600">Produk baru 3 hari lebih awal</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✨</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Birthday Bonus</p>
+                                        <p class="text-sm text-gray-600">Voucher spesial setiap ulang tahun</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">✨</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Garansi 12 Bulan</p>
+                                        <p class="text-sm text-gray-600">Perlindungan produk lebih lama</p>
+                                    </div>
+                                </li>
+                            </ul>
+
+                            <button onclick="showMembershipPurchase('silver', 100000)" class="w-full bg-gradient-to-r from-slate-600 to-slate-800 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition transform hover:scale-105">
+                                💳 Beli Sekarang
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Gold Tier -->
+                    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition duration-300">
+                        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-8 text-center">
+                            <div class="text-5xl mb-3">🏆</div>
+                            <h2 class="text-3xl font-bold mb-2">Gold Member</h2>
+                            <p class="text-yellow-100 text-lg font-semibold">Harga</p>
+                            <p class="text-4xl font-bold mt-2">Rp 200.000</p>
+                            <p class="text-yellow-100 text-sm mt-3">Pembayaran sekali untuk akses selamanya</p>
+                        </div>
+                        
+                        <div class="p-8">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Keuntungan Eksklusif:</h3>
+                            
+                            <ul class="space-y-4 mb-8">
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">👑</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Diskon 20%</p>
+                                        <p class="text-sm text-gray-600">Diskon tertinggi untuk semua produk</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">👑</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Poin Reward 2x</p>
+                                        <p class="text-sm text-gray-600">Kumpulkan poin paling cepat</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">👑</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Gratis Ongkir Unlimited</p>
+                                        <p class="text-sm text-gray-600">Tanpa minimum pembelian</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">👑</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">VIP Priority Support</p>
+                                        <p class="text-sm text-gray-600">Nomor WA khusus & respon < 1 jam</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">👑</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Konsultasi Desain Gratis</p>
+                                        <p class="text-sm text-gray-600">Desainer profesional kami siap membantu</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">👑</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Same Day Delivery</p>
+                                        <p class="text-sm text-gray-600">Pengiriman hari yang sama gratis</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">👑</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Exclusive VIP Events</p>
+                                        <p class="text-sm text-gray-600">Undangan ke launching produk eksklusif</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-2xl mr-4">👑</span>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Garansi Seumur Hidup</p>
+                                        <p class="text-sm text-gray-600">Perlindungan produk selamanya</p>
+                                    </div>
+                                </li>
+                            </ul>
+
+                            <button onclick="showMembershipPurchase('gold', 200000)" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition transform hover:scale-105">
+                                💳 Beli Sekarang
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Table -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-20">
+                    <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-8 text-center">
+                        <h2 class="text-3xl font-bold">Perbandingan Membership 📊</h2>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-100 border-b-2 border-gray-300">
+                                    <th class="px-6 py-4 text-left font-bold text-gray-800">Fitur</th>
+                                    <th class="px-6 py-4 text-center font-bold text-amber-700">🥉 Bronze</th>
+                                    <th class="px-6 py-4 text-center font-bold text-slate-700">🥈 Silver</th>
+                                    <th class="px-6 py-4 text-center font-bold text-yellow-700">🏆 Gold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Diskon Pembelian</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">5%</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">12%</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">20%</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Poin Reward</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">1x</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">1.5x</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">2x</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Gratis Ongkir</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">-</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">> Rp 300rb</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">Unlimited</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Early Bird Access</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">❌</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">✅ 3 hari</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">✅ 7 hari</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Birthday Bonus</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">❌</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">✅</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">✅ + Extra</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Priority Support</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">Standard</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">Standard</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">VIP 24/7</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Konsultasi Desain</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">❌</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">❌</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">✅ Gratis</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Same Day Delivery</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">❌</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">❌</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">✅ Gratis</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">VIP Events</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">❌</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">❌</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">✅</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-semibold text-gray-800">Garansi Produk</td>
+                                    <td class="px-6 py-4 text-center text-amber-600">6 Bulan</td>
+                                    <td class="px-6 py-4 text-center text-slate-600">12 Bulan</td>
+                                    <td class="px-6 py-4 text-center text-yellow-600">Seumur Hidup</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- How to Upgrade Section -->
+                <div class="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl shadow-lg p-12 text-white mb-20">
+                    <h2 class="text-3xl font-bold mb-8 text-center">Cara Upgrade Membership 🚀</h2>
+                    
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6 text-center backdrop-blur">
+                            <div class="text-4xl mb-4">1️⃣</div>
+                            <h3 class="font-bold text-lg mb-2">Lakukan Pembelian</h3>
+                            <p class="text-sm text-opacity-90">Belanja tumbler sesuai target tier yang diinginkan</p>
+                        </div>
+
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6 text-center backdrop-blur">
+                            <div class="text-4xl mb-4">2️⃣</div>
+                            <h3 class="font-bold text-lg mb-2">Kumpulkan Total</h3>
+                            <p class="text-sm text-opacity-90">Total pembelian kami akan dicatat di sistem</p>
+                        </div>
+
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6 text-center backdrop-blur">
+                            <div class="text-4xl mb-4">3️⃣</div>
+                            <h3 class="font-bold text-lg mb-2">Capai Target Tier</h3>
+                            <p class="text-sm text-opacity-90">Saat target tercapai, upgrade otomatis</p>
+                        </div>
+
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6 text-center backdrop-blur">
+                            <div class="text-4xl mb-4">4️⃣</div>
+                            <h3 class="font-bold text-lg mb-2">Nikmati Benefit</h3>
+                            <p class="text-sm text-opacity-90">Langsung menikmati semua keuntungan tier baru!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Membership -->
+                <div class="bg-white rounded-2xl shadow-lg p-12">
+                    <h2 class="text-3xl font-bold mb-12 text-center text-gray-800">FAQ Membership 💬</h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="font-bold text-gray-800 mb-3 text-lg">Berapa lama membership berlaku?</h3>
+                            <p class="text-gray-600">Status membership bersifat seumur hidup selama akun Anda aktif. Tidak ada biaya tahunan atau pembaruan membership.</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="font-bold text-gray-800 mb-3 text-lg">Bisa turun tier tidak?</h3>
+                            <p class="text-gray-600">Status tier Anda tidak akan pernah turun. Upgrade hanya naik atau tetap, tidak bisa menurun ke tier lebih rendah.</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="font-bold text-gray-800 mb-3 text-lg">Bagaimana jika total pembelian tidak pas?</h3>
+                            <p class="text-gray-600">Total pembelian dihitung dari semua transaksi Anda. Upgrade otomatis saat mencapai target. Tidak perlu tepat angka.</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="font-bold text-gray-800 mb-3 text-lg">Apakah poin bisa ditukar uang?</h3>
+                            <p class="text-gray-600">Ya! Setiap 100 poin dapat ditukar dengan Rp 10.000 dalam bentuk voucher atau kredit untuk pembelian berikutnya.</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="font-bold text-gray-800 mb-3 text-lg">Bagaimana cara tahu tier saya?</h3>
+                            <p class="text-gray-600">Hubungi tim kami via WhatsApp dengan menyebutkan nomor pesanan atau nama Anda untuk cek status membership.</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="font-bold text-gray-800 mb-3 text-lg">Diskon bisa digabung promo lain?</h3>
+                            <p class="text-gray-600">Diskon membership sudah optimimal. Tidak bisa digabung dengan promo flash sale, tapi berlaku untuk semua produk.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-12 relative z-10">
         <div class="container mx-auto px-6">
@@ -709,10 +1208,10 @@
                 <div>
                     <h4 class="font-semibold mb-4">Produk</h4>
                     <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" onclick="showPage('membership')" class="hover:text-white transition">Membership</a></li>
                         <li><a href="#" onclick="showPage('menu')" class="hover:text-white transition">Tumbler Classic</a></li>
                         <li><a href="#" onclick="showPage('menu')" class="hover:text-white transition">Tumbler Premium</a></li>
                         <li><a href="#" onclick="showPage('menu')" class="hover:text-white transition">Tumbler Deluxe</a></li>
-                        <li><a href="#" onclick="showPage('menu')" class="hover:text-white transition">Tumbler Kids</a></li>
                     </ul>
                 </div>
                 
@@ -747,29 +1246,22 @@
         // Global variables
         let currentPage = 'home';
         
-        // Page navigation (require login for order)
+        // Page navigation
         function showPage(pageId) {
-            // If attempting to access order, require login
-            if (pageId === 'order' && !getLoggedMember()) {
-                alert('Silakan login terlebih dahulu untuk melanjutkan pemesanan.');
-                pageId = 'login';
-            }
-
             // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
-
+            
             // Show selected page
             document.getElementById(pageId).classList.add('active');
             currentPage = pageId;
-
+            
             // Close mobile menu
             document.getElementById('mobile-menu').classList.add('hidden');
-
+            
             // Scroll to top
             window.scrollTo(0, 0);
-            renderAuthArea();
         }
         
         // Mobile menu toggle
@@ -806,12 +1298,6 @@
         // Submit order form
         async function submitOrder(event) {
             event.preventDefault();
-            // Require login before submitting order
-            if (!getLoggedMember()) {
-                alert('Anda harus login terlebih dahulu sebelum memesan.');
-                showPage('login');
-                return;
-            }
             
             const formData = new FormData(event.target);
             const orderData = {};
@@ -909,20 +1395,15 @@
         // Google Sheets Configuration - PASTE YOUR DEPLOYMENT URLS HERE
         const GOOGLE_SHEETS_CONFIG = {
             ORDER_URL: 'https://script.google.com/macros/s/AKfycbwSvJKTtauV9n2Yid1M2urXu0e5niCzxnEoYL-S0JN7TPeLcmdYijy-Pwe7UbijEInk/exec',     // Paste your Google Apps Script deployment URL for orders
-            CONTACT_URL: 'https://script.google.com/macros/s/AKfycbwSvJKTtauV9n2Yid1M2urXu0e5niCzxnEoYL-S0JN7TPeLcmdYijy-Pwe7UbijEInk/exec'  // Paste your Google Apps Script deployment URL for contacts
+            CONTACT_URL: 'https://script.google.com/macros/s/AKfycbwSvJKTtauV9n2Yid1M2urXu0e5niCzxnEoYL-S0JN7TPeLcmdYijy-Pwe7UbijEInk/exec',  // Paste your Google Apps Script deployment URL for contacts
+            MEMBERSHIP_URL: 'https://script.google.com/macros/s/AKfycbxiG_r9jFZ6M5Pbh24Ul-SbkbOvhRlBi_n4BaplbkW1lXL-zTVnzWUlkKxtGggrYIE3/exec'  // Paste your Google Apps Script deployment URL for membership registration
         };
-        // Add LOGIN_URL to capture login events (paste your Apps Script URL here)
-        GOOGLE_SHEETS_CONFIG.LOGIN_URL = 'https://script.google.com/macros/s/PASTE_YOUR_LOGIN_DEPLOY/exec';
         
         // Google Sheets integration function
         async function sendToGoogleSheets(data, type) {
-            let url;
-            if (type === 'order') url = GOOGLE_SHEETS_CONFIG.ORDER_URL;
-            else if (type === 'contact') url = GOOGLE_SHEETS_CONFIG.CONTACT_URL;
-            else if (type === 'login') url = GOOGLE_SHEETS_CONFIG.LOGIN_URL;
-            else url = null;
+            const url = type === 'https://script.google.com/macros/s/AKfycbxiG_r9jFZ6M5Pbh24Ul-SbkbOvhRlBi_n4BaplbkW1lXL-zTVnzWUlkKxtGggrYIE3/exec' ? GOOGLE_SHEETS_CONFIG.ORDER_URL : GOOGLE_SHEETS_CONFIG.CONTACT_URL;
             
-            if (!url || url.includes('PASTE_')) {
+            if (!url || url.includes('https://script.google.com/macros/s/AKfycbxiG_r9jFZ6M5Pbh24Ul-SbkbOvhRlBi_n4BaplbkW1lXL-zTVnzWUlkKxtGggrYIE3/exec')) {
                 console.warn('Google Sheets URL belum dikonfigurasi untuk:', type);
                 return { success: false, error: 'URL belum dikonfigurasi' };
             }
@@ -1012,197 +1493,361 @@
             
             // Create corner tumblers only once
             createCornerTumblers();
-            renderAuthArea();
+            
+            // Check if user is logged in
+            checkMembershipStatus();
         });
 
-        // --- Simple client-side auth helpers ---
-        function getLoggedMember() {
-            try { return JSON.parse(localStorage.getItem('loggedMember') || 'null'); } catch (e) { return null; }
-        }
-
-        function setLoggedMember(obj) {
-            localStorage.setItem('loggedMember', JSON.stringify(obj));
-            renderAuthArea();
-        }
-
-        function clearLoggedMember() {
-            localStorage.removeItem('loggedMember');
-            renderAuthArea();
-        }
-
-        // Render auth area in nav
-        function renderAuthArea() {
-            const area = document.getElementById('authArea');
-            if (!area) return;
-            const lm = getLoggedMember();
-            if (lm) {
-                const profile = loadProfile(lm.email) || {};
-                const displayName = profile.displayName || lm.email.split('@')[0];
-                const initials = getInitials(lm.email);
-                
-                let profileButton = '';
-                if (profile.avatarDataUrl) {
-                    profileButton = `<img src="${profile.avatarDataUrl}" class="w-7 h-7 rounded-full object-cover" alt="avatar" />`;
-                } else {
-                    profileButton = `<div class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-semibold">${initials}</div>`;
-                }
-                
-                area.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <button onclick="showProfileModal()" class="flex items-center gap-2 bg-white px-3 py-1 rounded shadow-sm hover:shadow-md transition">
-                            ${profileButton}
-                            <span class="text-sm text-gray-700">${escapeHtml(displayName)}</span>
-                        </button>
-                        <button onclick="logoutUser()" class="bg-transparent border border-purple-600 text-purple-600 px-3 py-1 rounded text-sm hover:bg-purple-50 transition">Logout</button>
-                    </div>
-                `;
-            } else {
-                area.innerHTML = `<button onclick="showPage('login')" class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition">Login</button>`;
-            }
-        }
-
-        function logoutUser() {
-            clearLoggedMember();
-            alert('You have been logged out.');
-            showPage('home');
-        }
-
-        function escapeHtml(str) {
-            return String(str).replace(/[&<>"']/g, function (s) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]; });
-        }
-
-        // Login form handler
-        document.addEventListener('DOMContentLoaded', function() {
-            const lf = document.getElementById('loginForm');
-            if (!lf) return;
-            lf.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const email = document.getElementById('loginEmail').value.trim();
-                const password = document.getElementById('loginPassword').value || '';
-                if (!email) { alert('Please enter your email to login'); return; }
-
-                const memberObj = { email: email, loggedAt: new Date().toISOString() };
-                setLoggedMember(memberObj);
-
-                // Send login event to Google Sheets (best-effort; no-cors)
-                try { await sendToGoogleSheets({ email: email, timestamp: memberObj.loggedAt }, 'login'); } catch(e) { console.warn('Login log failed', e); }
-
-                // Ensure a profile exists
-                let profile = loadProfile(email) || {};
-                profile.displayName = profile.displayName || email.split('@')[0];
-                profile.joinedAt = profile.joinedAt || new Date().toLocaleString('en-US');
-                saveProfileToStorage(email, profile);
-
-                renderAuthArea();
-
-                // Show success overlay
-                const overlay = document.getElementById('loginSuccessOverlay');
-                overlay.classList.add('show');
-
-                // Redirect after 2.5 seconds
+        // ===== ANIMASI & EFFECTS =====
+        
+        // Generate Confetti
+        function generateConfetti() {
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA502', '#FF6348', '#FFE66D', '#95E1D3', '#A8DADC'];
+            const confettiCount = 50;
+            
+            for (let i = 0; i < confettiCount; i++) {
                 setTimeout(() => {
-                    overlay.classList.remove('show');
-                    showPage('order');
-                }, 2500);
-            });
-        });
-
-        // --- Profile helpers ---
-        function getInitials(email) {
-            const name = (email || '').split('@')[0] || '';
-            const parts = name.split(/[._\- ]+/).filter(Boolean);
-            if (parts.length === 0) return (name[0] || '?').toUpperCase();
-            if (parts.length === 1) return (parts[0][0] || '?').toUpperCase();
-            return ((parts[0][0] || '') + (parts[1][0] || '')).toUpperCase();
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti ' + (Math.random() > 0.5 ? 'fall' : 'rise');
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.width = (Math.random() * 8 + 5) + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.animationDuration = (Math.random() * 1 + 2.5) + 's';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 20);
+            }
         }
-
-        function getProfileKey(email) {
-            return 'profile_' + (email || '').toLowerCase();
-        }
-
-        function loadProfile(email) {
-            try { return JSON.parse(localStorage.getItem(getProfileKey(email)) || 'null'); } catch (e) { return null; }
-        }
-
-        function saveProfileToStorage(email, profileObj) {
-            localStorage.setItem(getProfileKey(email), JSON.stringify(profileObj));
-        }
-
-        function showProfileModal() {
-            const lm = getLoggedMember();
-            if (!lm || !lm.email) { alert('Please login first.'); showPage('login'); return; }
+        
+        // Show Success Animation Modal
+        function showSuccessAnimation(message, duration = 3000) {
+            // Create overlay backdrop
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-9999';
+            overlay.style.zIndex = '9999';
             
-            const profile = loadProfile(lm.email) || {
-                displayName: lm.email.split('@')[0],
-                email: lm.email,
-                avatarDataUrl: null,
-                joinedAt: new Date().toLocaleString('en-US')
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'success-modal bg-white rounded-2xl shadow-2xl p-12 text-center max-w-md w-full mx-4';
+            
+            modal.innerHTML = `
+                <div class="success-checkmark mb-6">
+                    <svg class="w-24 h-24 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold text-green-600 mb-3">Pendaftaran Berhasil! 🎉</h2>
+                <p class="text-gray-600 text-lg mb-6">${message}</p>
+                <div class="flex justify-center gap-2">
+                    <span class="text-3xl animate-bounce">✨</span>
+                    <span class="text-3xl animate-bounce" style="animation-delay: 0.2s;">🎊</span>
+                    <span class="text-3xl animate-bounce" style="animation-delay: 0.4s;">🎉</span>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+            
+            // Generate confetti
+            generateConfetti();
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                overlay.remove();
+                modal.remove();
+            }, duration);
+        }
+        
+        // ===== MEMBERSHIP SYSTEM =====
+        
+        // Membership data structure
+        const membershipTiers = {
+            bronze: {
+                name: 'Bronze Member',
+                icon: '🥉',
+                price: 50000,
+                discount: 5,
+                color: 'from-amber-600 to-orange-600',
+                benefits: [
+                    { icon: '✅', title: 'Diskon 5%', desc: 'Untuk setiap pembelian tumbler' },
+                    { icon: '✅', title: 'Poin Reward', desc: 'Kumpulkan setiap transaksi' },
+                    { icon: '✅', title: 'Info Produk Terbaru', desc: 'Update eksklusif via WhatsApp' },
+                    { icon: '✅', title: 'Customer Support', desc: 'Bantuan 24/7 dari tim kami' },
+                    { icon: '✅', title: 'Garansi 6 Bulan', desc: 'Perlindungan produk penuh' }
+                ]
+            },
+            silver: {
+                name: 'Silver Member',
+                icon: '🥈',
+                price: 100000,
+                discount: 12,
+                color: 'from-slate-600 to-slate-800',
+                benefits: [
+                    { icon: '✨', title: 'Diskon 12%', desc: 'Untuk semua pembelian' },
+                    { icon: '✨', title: 'Poin Reward 1.5x', desc: 'Kumpulkan lebih cepat' },
+                    { icon: '✨', title: 'Gratis Ongkir', desc: 'Untuk pembelian > Rp 300rb' },
+                    { icon: '✨', title: 'Akses Early Bird', desc: 'Produk baru 3 hari lebih awal' },
+                    { icon: '✨', title: 'Birthday Bonus', desc: 'Voucher spesial setiap ulang tahun' },
+                    { icon: '✨', title: 'Garansi 12 Bulan', desc: 'Perlindungan produk lebih lama' }
+                ]
+            },
+            gold: {
+                name: 'Gold Member',
+                icon: '🏆',
+                price: 200000,
+                discount: 20,
+                color: 'from-yellow-500 to-yellow-600',
+                benefits: [
+                    { icon: '👑', title: 'Diskon 20%', desc: 'Diskon tertinggi untuk semua produk' },
+                    { icon: '👑', title: 'Poin Reward 2x', desc: 'Kumpulkan poin paling cepat' },
+                    { icon: '👑', title: 'Gratis Ongkir Unlimited', desc: 'Tanpa minimum pembelian' },
+                    { icon: '👑', title: 'VIP Priority Support', desc: 'Nomor WA khusus & respon < 1 jam' },
+                    { icon: '👑', title: 'Konsultasi Desain Gratis', desc: 'Desainer profesional kami siap membantu' },
+                    { icon: '👑', title: 'Same Day Delivery', desc: 'Pengiriman hari yang sama gratis' },
+                    { icon: '👑', title: 'Exclusive VIP Events', desc: 'Undangan ke launching produk eksklusif' },
+                    { icon: '👑', title: 'Garansi Seumur Hidup', desc: 'Perlindungan produk selamanya' }
+                ]
+            }
+        };
+
+        // Show membership purchase modal
+        function showMembershipPurchase(tier, price) {
+            const membership = membershipTiers[tier];
+            
+            // Set membership info
+            const infoDiv = document.getElementById('membershipInfo');
+            infoDiv.className = `bg-gradient-to-r ${membership.color} text-white`;
+            infoDiv.innerHTML = `
+                <div class="text-center">
+                    <div class="text-4xl mb-2">${membership.icon}</div>
+                    <h3 class="text-2xl font-bold mb-2">${membership.name}</h3>
+                    <p class="text-xl font-semibold">Harga: Rp ${price.toLocaleString('id-ID')}</p>
+                </div>
+            `;
+            
+            // Set total payment
+            document.getElementById('totalPayment').textContent = 'Rp ' + price.toLocaleString('id-ID');
+            
+            // Store tier in form
+            document.getElementById('membershipForm').dataset.tier = tier;
+            document.getElementById('membershipForm').dataset.price = price;
+            
+            // Show modal
+            document.getElementById('membershipPurchase').classList.remove('hidden');
+            document.getElementById('membershipPurchase').classList.add('flex');
+        }
+
+        // Close membership purchase modal
+        function closeMembershipPurchase() {
+            document.getElementById('membershipPurchase').classList.add('hidden');
+            document.getElementById('membershipPurchase').classList.remove('flex');
+            document.getElementById('membershipForm').reset();
+        }
+
+        // Submit membership registration
+        function submitMembership(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const tier = event.target.dataset.tier;
+            const price = parseInt(event.target.dataset.price);
+            
+            // Validate password
+            if (formData.get('password') !== formData.get('confirmPassword')) {
+                alert('❌ Password dan konfirmasi password tidak cocok!');
+                return;
+            }
+            
+            if (formData.get('password').length < 6) {
+                alert('❌ Password minimal 6 karakter!');
+                return;
+            }
+            
+            // Check if email already exists
+            const members = JSON.parse(localStorage.getItem('nayabottle_members')) || {};
+            if (members[formData.get('email')]) {
+                alert('❌ Email sudah terdaftar! Silakan gunakan email lain atau login.');
+                return;
+            }
+            
+            // Create member object
+            const memberData = {
+                nama: formData.get('nama'),
+                email: formData.get('email'),
+                password: btoa(formData.get('password')), // Simple encryption
+                whatsapp: formData.get('whatsapp'),
+                tier: tier,
+                joinDate: new Date().toLocaleDateString('id-ID'),
+                timestamp: new Date().toLocaleString('id-ID'),
+                poin: 0
             };
+            
+            // Save to localStorage
+            members[formData.get('email')] = memberData;
+            localStorage.setItem('nayabottle_members', JSON.stringify(members));
+            
+            // Set current user
+            localStorage.setItem('nayabottle_currentUser', formData.get('email'));
+            
+            // Send to Google Sheets
+            sendMembershipToGoogleSheets(memberData, price);
+            
+            // Show success animation
+            const successMessage = `Anda telah berhasil mendaftar sebagai <strong>${membershipTiers[tier].name}</strong>!<br><br>Total Pembayaran: <strong>Rp ${price.toLocaleString('id-ID')}</strong><br><br>Silakan lakukan transfer dan cek WhatsApp Anda untuk detail pembayaran.`;
+            showSuccessAnimation(successMessage, 4000);
+            
+            // Close modal and navigate to dashboard after animation
+            setTimeout(() => {
+                closeMembershipPurchase();
+                event.target.reset();
+                loadMemberDashboard(formData.get('email'));
+                showPage('memberDashboard');
+            }, 2000);
+        }
 
-            // Populate modal
-            const avatarImg = document.getElementById('profileAvatarImg');
-            const initials = document.getElementById('profileInitials');
-            if (profile.avatarDataUrl) {
-                avatarImg.src = profile.avatarDataUrl;
-                avatarImg.style.display = 'block';
-                initials.style.display = 'none';
-            } else {
-                avatarImg.style.display = 'none';
-                initials.style.display = 'block';
-                initials.textContent = getInitials(lm.email);
+        // Send membership data to Google Sheets
+        async function sendMembershipToGoogleSheets(memberData, price) {
+            const url = GOOGLE_SHEETS_CONFIG.MEMBERSHIP_URL;
+            
+            if (!url || url.includes('https://script.google.com/macros/s/AKfycbyxda_ODRgPZVzwiTe1JADxQ6NyIwCjoS6bDXkMrs1MJRs4L1xvkSvNY9e09wX3bml0/exec')) {
+                console.warn('https://script.google.com/macros/s/AKfycbyxda_ODRgPZVzwiTe1JADxQ6NyIwCjoS6bDXkMrs1MJRs4L1xvkSvNY9e09wX3bml0/exec');
+                return { success: false };
             }
             
-            document.getElementById('profileDisplayName').value = profile.displayName || '';
-            document.getElementById('profileEmailLabel').textContent = lm.email;
-            document.getElementById('profileJoinedLabel').textContent = profile.joinedAt || new Date().toLocaleString('en-US');
-
-            const modal = document.getElementById('profileModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeProfileModal() {
-            const modal = document.getElementById('profileModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        // Avatar file input handler
-        document.addEventListener('change', function(e) {
-            if (e.target && e.target.id === 'profileAvatarInput') {
-                const file = e.target.files && e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const avatarImg = document.getElementById('profileAvatarImg');
-                    const initials = document.getElementById('profileInitials');
-                    avatarImg.src = ev.target.result;
-                    avatarImg.style.display = 'block';
-                    initials.style.display = 'none';
+            try {
+                const dataToSend = {
+                    nama: memberData.nama,
+                    email: memberData.email,
+                    whatsapp: memberData.whatsapp,
+                    tier: memberData.tier,
+                    price: price,
+                    joinDate: memberData.joinDate,
+                    timestamp: memberData.timestamp
                 };
-                reader.readAsDataURL(file);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataToSend)
+                });
+                
+                console.log('Data membership berhasil dikirim ke Google Sheets');
+                return { success: true };
+                
+            } catch (error) {
+                console.error('Error mengirim membership ke Google Sheets:', error);
+                return { success: false };
+            }
+        }
+
+        // Load member dashboard
+        function loadMemberDashboard(email) {
+            const members = JSON.parse(localStorage.getItem('nayabottle_members')) || {};
+            const memberData = members[email];
+            
+            if (!memberData) return;
+            
+            const tier = memberData.tier;
+            const membership = membershipTiers[tier];
+            
+            // Set member name
+            document.getElementById('memberName').textContent = memberData.nama;
+            document.getElementById('memberEmail').textContent = memberData.email;
+            document.getElementById('memberJoinDate').textContent = memberData.joinDate;
+            
+            // Set tier card
+            const tierCard = document.getElementById('tierCard');
+            tierCard.className = `bg-gradient-to-br ${membership.color} rounded-2xl shadow-lg p-8 text-white`;
+            tierCard.innerHTML = `
+                <div class="text-sm opacity-90 mb-2">Status Membership</div>
+                <div class="text-4xl font-bold mb-2">${membership.icon}</div>
+                <div class="text-2xl font-bold">${membership.name}</div>
+                <p class="text-sm opacity-75 mt-2">Diskon: ${membership.discount}%</p>
+            `;
+            
+            // Set member benefits
+            const benefitsDiv = document.getElementById('memberBenefits');
+            benefitsDiv.innerHTML = membership.benefits.map(benefit => `
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="text-2xl mb-2">${benefit.icon}</div>
+                    <h4 class="font-bold text-gray-800 mb-1">${benefit.title}</h4>
+                    <p class="text-sm text-gray-600">${benefit.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        // Check membership status
+        function checkMembershipStatus() {
+            const currentUser = localStorage.getItem('nayabottle_currentUser');
+            const dropdown = document.getElementById('memberDropdown');
+            const dropdownContent = document.getElementById('memberDropdownContent');
+            
+            if (currentUser) {
+                const members = JSON.parse(localStorage.getItem('nayabottle_members')) || {};
+                if (members[currentUser]) {
+                    loadMemberDashboard(currentUser);
+                    
+                    // Update dropdown
+                    const memberData = members[currentUser];
+                    dropdownContent.innerHTML = `
+                        <div class="p-4 border-b border-gray-200">
+                            <p class="font-semibold text-gray-800">${memberData.nama}</p>
+                            <p class="text-sm text-gray-600">${membershipTiers[memberData.tier].name}</p>
+                        </div>
+                        <button onclick="showPage('memberDashboard'); closeMemberDropdown()" class="w-full text-left px-4 py-3 hover:bg-gray-100 transition">
+                            📊 Dashboard
+                        </button>
+                        <button onclick="logout()" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 transition">
+                            🚪 Logout
+                        </button>
+                    `;
+                }
+            } else {
+                // Not logged in
+                dropdownContent.innerHTML = `
+                    <button onclick="showPage('membership'); closeMemberDropdown()" class="w-full text-left px-4 py-3 hover:bg-gray-100 transition">
+                        📝 Daftar Member
+                    </button>
+                `;
+            }
+        }
+
+        // Toggle member menu
+        function toggleMemberMenu() {
+            const dropdown = document.getElementById('memberDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close member dropdown
+        function closeMemberDropdown() {
+            const dropdown = document.getElementById('memberDropdown');
+            dropdown.classList.add('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('memberDropdown');
+            const memberBtn = event.target.closest('button');
+            
+            if (!memberBtn && !dropdown.contains(event.target)) {
+                closeMemberDropdown();
             }
         });
 
-        // Save profile to localStorage
-        function saveProfile() {
-            const lm = getLoggedMember();
-            if (!lm || !lm.email) { showPage('login'); return; }
-            
-            const email = lm.email;
-            const displayName = document.getElementById('profileDisplayName').value.trim() || email.split('@')[0];
-            const avatarImg = document.getElementById('profileAvatarImg');
-            const avatarDataUrl = avatarImg && avatarImg.src && avatarImg.src.indexOf('data:') === 0 ? avatarImg.src : null;
-            
-            const profile = loadProfile(email) || {};
-            profile.displayName = displayName;
-            profile.avatarDataUrl = avatarDataUrl || profile.avatarDataUrl || null;
-            profile.joinedAt = profile.joinedAt || new Date().toLocaleString('en-US');
-            
-            saveProfileToStorage(email, profile);
-            renderAuthArea();
-            alert('Profile saved successfully!');
-            closeProfileModal();
+        // Logout
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                localStorage.removeItem('nayabottle_currentUser');
+                alert('✅ Anda telah logout. Sampai jumpa lagi!');
+                showPage('home');
+            }
         }
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a4de301125df9f',t:'MTc1OTc1MDY1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
